@@ -3,32 +3,44 @@ import json
 
 def convert_json_to_text():
     data = []
-    filenames = []
+    speakers = []
 
     # Read json files from ./output folder
     for filename in sorted(os.listdir("output")):
         print(f"Reading {filename}")
+        speaker_name = filename.replace('.json', '')
+        speakers.append(speaker_name)
         with open(f"output/{filename}") as file:
             data.append(json.load(file))
-            filenames.append(filename.replace('.json', ''))
 
-    # Combining and sorting the segments from both JSON files by their start times
-    combined_segments = data[0]['segments'] + data[1]['segments']
+    # Combining segments from all JSON files  
+    combined_segments = []
+    for speaker_data in data:
+        combined_segments.extend(speaker_data['segments'])
+        
+    # Sort segments    
     sorted_combined_segments = sorted(combined_segments, key=lambda x: x['start'])
 
-    # Preparing the conversation text in the desired format
+    # Prepare conversation text
     conversation_text = []
+    current_speaker = None
+    speaker_text = []
+    
     for segment in sorted_combined_segments:
-        speaker = filenames[0] if segment in data[0]['segments'] else filenames[1]
-        text = segment['text']
-        conversation_text.append(f"- {speaker}: {text}")
+        speaker = speakers[data.index(next(d for d in data if segment in d['segments']))]        
+        if speaker != current_speaker:
+            if current_speaker:
+                conversation_text.append(f"- {current_speaker}: {' '.join(speaker_text)}")
+            current_speaker = speaker
+            speaker_text = []
+        speaker_text.append(segment['text'])
 
-    # Joining the conversation lines into a single string
-    conversation_str = '\n'.join(conversation_text)
+    if current_speaker:
+        conversation_text.append(f"- {current_speaker}: {' '.join(speaker_text)}")
 
-    # Output the conversation text to a file
-    output_file_path = 'transcript.txt'
-    with open(output_file_path, 'w') as file:
+    # Output to file
+    conversation_str = '\n'.join(conversation_text)  
+    with open('transcript.txt', 'w') as file:
         file.write(conversation_str)
 
 def main():
