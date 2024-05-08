@@ -12,6 +12,15 @@ def main():
     print(f"Using device: {device}")
     model = whisper.load_model("large-v3", device=device, download_root='./cache')
     print("Model loaded successfully")
+
+    # Remove all files in output folder
+    for filename in os.listdir("output"):
+        file_path = os.path.join("output", filename)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
     
     # Iterate files in data
     for filename in sorted(os.listdir("input")):
@@ -28,10 +37,8 @@ def main():
             sample_rate = audio.frame_rate
             print("Sample rate:", sample_rate)
             # Convert to 16KHz
-            # if sample_rate != 16000:
-            if sample_rate != 8000:
-                audio = audio.set_frame_rate(8000)
-                # audio.export(file_path, format="wav")
+            if sample_rate != 16000:
+                audio = audio.set_frame_rate(16000)
             print("Sample rate:", audio.frame_rate)
 
             # Export to ./temp folder
@@ -47,7 +54,7 @@ def main():
                 vad = 'auditok',
                 remove_empty_words = True,
                 temperature=0.8,
-                language="ru",
+                # language="ru",
                 verbose = False,
                 )
             
