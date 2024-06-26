@@ -2,7 +2,7 @@ import whisper_timestamped as whisper
 import json
 import os
 import torch
-from parse import convert_json_to_text
+from parse import convert_json_to_text, generate_srt_from_multiple_jsons
 from pydub import AudioSegment
 import datetime
 
@@ -120,7 +120,14 @@ def main():
         end_time = datetime.datetime.now()
         print(f"Transcribed {filename} in {end_time - start_time} seconds")
 
+    # Converting JSON to text
     convert_json_to_text()
+
+    # Generate youtube captions SRT file
+    output_folder = "output"
+    srt_output_file = "captions.srt"
+    generate_srt_from_multiple_jsons(output_folder, srt_output_file)
+
 
 if __name__ == "__main__":
     main()
